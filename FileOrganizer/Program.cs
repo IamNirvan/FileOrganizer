@@ -9,55 +9,66 @@ namespace FileOrganizer
 {
     class Program
     {
-        private const string ROOT = @"F:\C# organizer test folder";
+        private static string root = null;
+        private static string[] files = null;
+
 
         static void Main(string[] args)
         {
-            string[] files = SetFiles(ROOT);
+            root = GetDirectory();
 
-            if(files.Length != 0)
+            if(Directory.Exists(root))
             {
-                CreateSubDirs(files);
-                OrganizeFiles(files);
-                
-            } else
+                files = IdentifyFiles();
+
+                if (files.Length != 0)
+                {
+                    CreateDirectories();
+                    OrganizeFiles();
+                }
+                else
+                {
+                    Console.WriteLine("The directory is clean...");
+                }
+            }
+            else
             {
-                Console.WriteLine("The directory is clean...");
+                Console.WriteLine("\nWARNING: The directory doesn't exist");
             }
 
             Console.WriteLine("\nPress any key to exit");
             Console.ReadLine();
         }
 
-        private static string[] SetFiles(string path)
+        private static string[] IdentifyFiles()
         {
             string[] files = null;
 
             try
             {
-                files =  Directory.GetFiles(path);
+                files =  Directory.GetFiles(root);
             }
             catch (UnauthorizedAccessException ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            catch (DirectoryNotFoundException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            
             return files;
         }
             
-        private static void CreateSubDirs(string[] files)
+        private static void CreateDirectories()
         {
+            int count = 0;
+
             foreach (string file in files)
             {
                 try
                 {
-                    string path = $@"{ROOT}\{new FileInfo(file).Extension}";
+                    string path = $@"{root}\{new FileInfo(file).Extension}";
 
                     if (!Directory.Exists(path))
                     {
+                        count++;
                         Directory.CreateDirectory(path);
                         Console.WriteLine($"Created directory: {path}...");
                     }
@@ -68,18 +79,23 @@ namespace FileOrganizer
                     continue;
                 }
             }
+
+            Console.WriteLine($"\nINFO: [{count}] directories created\n\n");
         }
 
-        private static void OrganizeFiles(string[] files)
+        private static void OrganizeFiles()
         {
+            int count = 0;
+
             foreach (string file in files)
             {
                 try
                 {
                     FileInfo fileInfo = new FileInfo(file);
                     string fileName = fileInfo.Name;
-                    string newPath = $@"{ROOT}\{fileInfo.Extension}\{fileName}";
+                    string newPath = $@"{root}\{fileInfo.Extension}\{fileName}";
 
+                    count++;
                     File.Move(fileInfo.FullName, newPath);
                     Console.WriteLine($"Moved {fileName} to {newPath}...");
                 }
@@ -89,6 +105,14 @@ namespace FileOrganizer
                     continue;
                 }
             }
+
+            Console.WriteLine($"\nINFO: [{count}] files moved.");
+        }
+
+        private static string GetDirectory()
+        {
+            Console.WriteLine("Enter the directory: ");
+            return Console.ReadLine();
         }
     }
 }
