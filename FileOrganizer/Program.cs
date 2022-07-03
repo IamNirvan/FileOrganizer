@@ -12,7 +12,6 @@ namespace FileOrganizer
         private static string root = null;
         private static string[] files = null;
 
-
         static void Main(string[] args)
         {
             root = GetDirectory();
